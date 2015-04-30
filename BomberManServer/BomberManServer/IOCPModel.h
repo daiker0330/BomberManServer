@@ -1,21 +1,52 @@
+
+/*
+==========================================================================
+
+Purpose:
+
+	* 这个类CIOCPModel是本代码的核心类，用于说明WinSock服务器端编程模型中的
+	  完成端口(IOCP)的使用方法，并使用MFC对话框程序来调用这个类实现了基本的
+	  服务器网络通信的功能。
+
+	* 其中的PER_IO_DATA结构体是封装了用于每一个重叠操作的参数
+	  PER_HANDLE_DATA 是封装了用于每一个Socket的参数，也就是用于每一个完成端口的参数
+
+	* 详细的文档说明请参考 http://blog.csdn.net/PiggyXP
+
+Notes:
+
+	* 具体讲明了服务器端建立完成端口、建立工作者线程、投递Recv请求、投递Accept请求的方法，
+	  所有的客户端连入的Socket都需要绑定到IOCP上，所有从客户端发来的数据，都会实时显示到
+	  主界面中去。
+
+Author:
+
+	* PiggyXP【小猪】
+
+Date:
+
+	* 2009/10/04
+
+==========================================================================
+*/
+
 #pragma once
 
 // winsock 2 的头文件和库
 #include <winsock2.h>
 #include <MSWSock.h>
-#include <vector>
-//#include  <afxtempl.h>
-
-using namespace std;
+#include  <afxtempl.h>
 
 #pragma comment(lib,"ws2_32.lib")
 
 // 缓冲区长度 (1024*8)
+// 之所以为什么设置8K，也是一个江湖上的经验值
+// 如果确实客户端发来的每组数据都比较少，那么就设置得小一些，省内存
 #define MAX_BUFFER_LEN        8192  
 // 默认端口
 #define DEFAULT_PORT          12345    
 // 默认IP地址
-#define DEFAULT_IP            "127.0.0.1"
+#define DEFAULT_IP            _T("172.21.22.236")
 
 
 //////////////////////////////////////////////////////////////////
@@ -73,7 +104,7 @@ typedef struct _PER_IO_CONTEXT
 
 //====================================================================================
 //
-//				单句柄数据结构体定义(用于每一个完成端口)
+//				单句柄数据结构体定义(用于每一个完成端口，也就是每一个Socket的参数)
 //
 //====================================================================================
 
@@ -81,7 +112,8 @@ typedef struct _PER_SOCKET_CONTEXT
 {  
 	SOCKET      m_Socket;                                  // 每一个客户端连接的Socket
 	SOCKADDR_IN m_ClientAddr;                              // 客户端的地址
-	vector<_PER_IO_CONTEXT*> m_arrayIoContext;             // 客户端网络操作的上下文数据
+	CArray <_PER_IO_CONTEXT*> m_arrayIoContext;             // 客户端网络操作的上下文数据，
+	                                                       // 也就是说对于每一个客户端Socket，是可以在上面同时投递多个IO请求的
 
 	// 初始化
 	_PER_SOCKET_CONTEXT()
@@ -99,11 +131,11 @@ typedef struct _PER_SOCKET_CONTEXT
 		    m_Socket = INVALID_SOCKET;
 		}
 		// 释放掉所有的IO上下文数据
-		for( int i=0;i<m_arrayIoContext.size();i++ )
+		for( int i=0;i<m_arrayIoContext.GetCount();i++ )
 		{
-			delete m_arrayIoContext.at(i);
+			delete m_arrayIoContext.GetAt(i);
 		}
-		m_arrayIoContext.clear();
+		m_arrayIoContext.RemoveAll();
 	}
 
 	// 获取一个新的IoContext
@@ -111,7 +143,7 @@ typedef struct _PER_SOCKET_CONTEXT
 	{
 		_PER_IO_CONTEXT* p = new _PER_IO_CONTEXT;
 
-		m_arrayIoContext.push_back( p );
+		m_arrayIoContext.Add( p );
 
 		return p;
 	}
@@ -119,20 +151,15 @@ typedef struct _PER_SOCKET_CONTEXT
 	// 从数组中移除一个指定的IoContext
 	void RemoveContext( _PER_IO_CONTEXT* pContext )
 	{
-		//ASSERT( pContext!=NULL );
+		ASSERT( pContext!=NULL );
 
-		for( int i=0;i<m_arrayIoContext.size();i++ )
+		for( int i=0;i<m_arrayIoContext.GetCount();i++ )
 		{
-			if( pContext==m_arrayIoContext.at(i) )
+			if( pContext==m_arrayIoContext.GetAt(i) )
 			{
 				delete pContext;
 				pContext = NULL;
-				vector <_PER_IO_CONTEXT*>::iterator iter = m_arrayIoContext.begin();
-				for (int j = 0; j < i; j++)
-				{
-					iter++;
-				}
-				m_arrayIoContext.erase(iter);
+				m_arrayIoContext.RemoveAt(i);				
 				break;
 			}
 		}
@@ -180,7 +207,7 @@ public:
 	void UnloadSocketLib() { WSACleanup(); }
 
 	// 获得本机的IP地址
-	string GetLocalIP();
+	CString GetLocalIP();
 
 	// 设置监听端口
 	void SetPort( const int& nPort ) { m_nPort=nPort; }
@@ -232,6 +259,9 @@ protected:
 	// 判断客户端Socket是否已经断开
 	bool _IsSocketAlive(SOCKET s);
 
+	// 在主界面中显示信息
+	void _ShowMessage(const CString szFormat, ...) const;
+
 private:
 
 	HANDLE                       m_hShutdownEvent;              // 用来通知线程系统退出的事件，为了能够更好的退出线程
@@ -242,18 +272,17 @@ private:
 
 	int		                     m_nThreads;                    // 生成的线程数量
 
-	string                      m_strIP;                       // 服务器端的IP地址
+	CString                      m_strIP;                       // 服务器端的IP地址
 	int                          m_nPort;                       // 服务器端的监听端口
 
 	CRITICAL_SECTION             m_csContextList;               // 用于Worker线程同步的互斥量
 
-	vector<PER_SOCKET_CONTEXT*>  m_arrayClientContext;          // 客户端Socket的Context信息        
+	CArray<PER_SOCKET_CONTEXT*>  m_arrayClientContext;          // 客户端Socket的Context信息        
 
 	PER_SOCKET_CONTEXT*          m_pListenContext;              // 用于监听的Socket的Context信息
 
 	LPFN_ACCEPTEX                m_lpfnAcceptEx;                // AcceptEx 和 GetAcceptExSockaddrs 的函数指针，用于调用这两个扩展函数
 	LPFN_GETACCEPTEXSOCKADDRS    m_lpfnGetAcceptExSockAddrs; 
-
-	static string _msg;
+	static CString _msg;
 };
 
