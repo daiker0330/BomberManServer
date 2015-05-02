@@ -1,3 +1,4 @@
+#pragma once
 #include "StdAfx.h"
 #include "IOCPModel.h"
 #include "Message.h"
@@ -576,20 +577,19 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 		}
 		case MSG_LOGIN:
 		{
-			msg.type1 = MSG_SCENE;
-			if (strcmp(recv_msg->str1, user.c_str()) == 0 && strcmp(recv_msg->str2, psd.c_str()) == 0)
+			msg.type1 = MSG_LOGIN;
+			msg.type2 = MSG_NULL;
+			if (recv_msg->type2 == MSG_LOGIN_CKECK)
 			{
-				msg.type2 = MSG_SCENE_LOBBY;
+				if (strcmp(recv_msg->str1, user.c_str()) == 0 && strcmp(recv_msg->str2, psd.c_str()) == 0)
+				{
+					msg.type2 = MSG_LOGIN_CONFIRM;
 
-				msg_str = "success";
-				strcpy_s(msg.str1, msg_str.c_str());
-			}
-			else
-			{
-				msg.type2 = MSG_NULL;
-
-				msg_str = "invalid account";
-				strcpy_s(msg.str1, msg_str.c_str());
+				}
+				else
+				{
+					msg.type2 = MSG_LOGIN_DENY;
+				}
 			}
 			break;
 		}

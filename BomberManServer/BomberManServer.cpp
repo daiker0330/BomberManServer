@@ -1,6 +1,6 @@
 // BomberManServer.cpp : 定义控制台应用程序的入口点。
 //
-
+#pragma once
 #include "stdafx.h"
 
 using namespace std;
@@ -10,6 +10,105 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	CIOCPModel m_IOCP;
 	char s;
+
+	SQLHENV  henv = SQL_NULL_HENV;//定义环境句柄
+	SQLHDBC  hdbc1 = SQL_NULL_HDBC;//定义数据库连接句柄     
+	SQLHSTMT  hstmt1 = SQL_NULL_HSTMT;//定义语句句柄
+	RETCODE retcode;
+
+	retcode = SQLAllocHandle(SQL_HANDLE_ENV, NULL, &henv);
+
+	if (retcode < 0)//错误处理
+	{
+		cout << "allocate ODBC Environment handle errors." << endl;
+		return -1;
+	}
+	// Notify ODBC that this is an ODBC 3.0 application.
+	retcode = SQLSetEnvAttr(henv, SQL_ATTR_ODBC_VERSION,
+		(SQLPOINTER)SQL_OV_ODBC3, SQL_IS_INTEGER);
+	if (retcode < 0) //错误处理
+	{
+		cout << "the  ODBC is not version3.0 " << endl;
+		return -1;
+	}
+
+	// Allocate an ODBC connection and connect.
+	retcode = SQLAllocHandle(SQL_HANDLE_DBC, henv, &hdbc1);
+	if (retcode < 0) //错误处理
+	{
+		cout << "allocate ODBC connection handle errors." << endl;
+		return -1;
+	}
+	//Data Source Name must be of type User DNS or System DNS
+	wchar_t* szDSN = L"BombManServer";
+	wchar_t* szUID = L"daiker";//log name
+	wchar_t* szAuthStr = L"12345";//passward
+	//connect to the Data Source
+	retcode = SQLConnect(hdbc1, (SQLWCHAR*)szDSN, (SWORD)wcslen(szDSN), (SQLWCHAR*)szUID, (SWORD)wcslen(szUID), (SQLWCHAR*)szAuthStr, (SWORD)wcslen(szAuthStr));
+	if (retcode < 0) //错误处理
+	{
+		cout << "connect to  ODBC datasource errors." << endl;
+		return -1;
+	}
+	// Allocate a statement handle.
+	retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc1, &hstmt1);
+	if (retcode < 0) //错误处理
+	{
+		cout << "allocate ODBC statement handle errors." << endl;
+		return -1;
+	}
+
+	// Execute an SQL statement directly on the statement handle.每一句后面都跟了一个错误处理，当发生错误时可以很方便的判断错在哪里
+
+	//retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)"create table provider1(sno char(5) primary key,sname char(10) not null,status int,city char(10))", SQL_NTS);
+	//if (retcode < 0)
+	//{
+	//	cout << "creat errors." << endl;
+	//	return -1;
+	//}
+
+	retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)L"SELECT user_name,user_psd  FROM account", SQL_NTS);
+	if (retcode < 0)
+	{
+		cout << "Executing statement  throught ODBC  errors." << endl;
+		return -1;
+	}
+
+	// SQLBindCol variables
+	SQLCHAR      user_name[MaxNameLen + 1];
+	SQLCHAR   user_password[MaxNameLen + 1];
+	SQLINTEGER   columnLen = 0;//数据库定义中该属性列的长度
+
+#ifdef SQLBINDCOL
+
+	retcode = SQLBindCol(hstmt1, 1, SQL_C_CHAR, name, MaxNameLen, &columnLen);
+	retcode = SQLBindCol(hstmt1, 2, SQL_C_CHAR, city, MaxNameLen, &columnLen);
+	while ((retcode = SQLFetch(hstmt1)) != SQL_NO_DATA)
+	{
+		if (columnLen>0)
+			printf("user_name = %s  user_password = %s/n", user_name, user_password);
+		else
+			printf("user_name = %s  user_password = NULL/n", user_name, user_password);
+	}
+
+#else
+
+	while (1)
+	{
+		retcode = SQLFetch(hstmt1);
+		if (retcode == SQL_NO_DATA)
+			break;
+
+		retcode = SQLGetData(hstmt1, 1, SQL_C_CHAR, user_name, MaxNameLen, &columnLen);
+		retcode = SQLGetData(hstmt1, 2, SQL_C_CHAR, user_password, MaxNameLen, &columnLen);
+		if (columnLen > 0)
+			printf("user_name = %s  user_password = %s\n", user_name, user_password);
+		else
+			printf("user_name = %s  user_password = NULL\n", user_name, user_password);
+
+	}
+#endif
+	
 
 	if (false == m_IOCP.LoadSocketLib())
 	{
@@ -34,93 +133,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	m_IOCP.Stop();
 
-	//WORD wVersionRequested;
-	//WSADATA wsaData;
-	//int err;
-
-	//wVersionRequested = MAKEWORD(1, 1);
-
-	//err = WSAStartup(wVersionRequested, &wsaData);//该函数的功能是加载一个Winsocket库版本
-	//if (err != 0) {
-	//	return 0;
-	//}
-
-
-	//if (LOBYTE(wsaData.wVersion) != 1 ||
-	//	HIBYTE(wsaData.wVersion) != 1) {
-	//	WSACleanup();
-	//	return 0;
-	//}
-
-	////真正socket编程部分
-	//SOCKET sockSrv = socket(AF_INET, SOCK_STREAM, 0);//面向连接的可靠性服务SOCK_STRAM
-
-	//SOCKADDR_IN addrSrv;//存放本地地址信息的
-	//addrSrv.sin_addr.S_un.S_addr = htonl(INADDR_ANY);//htol将主机字节序long型转换为网络字节序
-	//addrSrv.sin_family = AF_INET;
-	//addrSrv.sin_port = htons(4161);//htos用来将端口转换成字符，1024以上的数字即可
-
-	//bind(sockSrv, (SOCKADDR*)&addrSrv, sizeof(SOCKADDR));//将socket绑定到相应地址和端口上
-
-	//listen(sockSrv, 20);//等待队列中的最大长度为5
-
-	//SOCKADDR_IN addrClient;
-	//int len = sizeof(SOCKADDR);
-
-	//while (1)
-	//{
-	//	SOCKET sockConn = accept(sockSrv, (SOCKADDR*)&addrClient, &len);//建立一个新的套接字用于通信，不是前面的监听套接字
-	//	char sendBuf[100];
-	//	sprintf_s(sendBuf, "Server IP is:%s",
-	//	inet_ntoa(addrClient.sin_addr));//inet_nota函数是将字符转换成ip地址
-	//	send(sockConn, sendBuf, strlen(sendBuf) + 1, 0);//服务器向客户端发送数据
-
-	//	char recvBuf[100];
-	//	recv(sockConn, recvBuf, 100, 0);//服务器从客户端接受数据
-	//	printf("%s\n", recvBuf);
-	//	closesocket(sockConn);//关闭socket
-	//}
-
-	/*int sockfd;
-	int client_fd;
-	struct sockaddr_in my_addr;
-	struct sockaddr_in remote_addr;
-	char * msg = "Hellow world!\n";
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
-		printf("scoket creat error!\n");
-		exit(1);
-	}
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(SERVPORT);
-	my_addr.sin_addr.s_addr = INADDR_ANY;
-	memset(&(my_addr.sin_zero), 0, 8);
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1)
-	{
-		printf("bind error\n");
-		exit(1);
-	}
-	if (listen(sockfd, BACKLOG) == -1)
-	{
-		printf("listen error\n");
-		exit(1);
-	}
-	while (1)
-	{
-		int sin_size = sizeof(struct sockaddr_in);
-		if ((client_fd = accept(sockfd, (struct sockaddr *)&remote_addr, &sin_size)) == -1)
-		{
-			printf("accept error\n");
-			continue;
-		}
-		if (send(client_fd, msg, strlen(msg), 0) == -1)
-		{
-			printf("send error\n");
-			shutdown(client_fd,2);
-			exit(0);
-		}
-		shutdown(client_fd, 2);
-	}*/
+	/* Clean up.*/
+	SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
+	SQLDisconnect(hdbc1);
+	SQLFreeHandle(SQL_HANDLE_DBC, hdbc1);
+	SQLFreeHandle(SQL_HANDLE_ENV, henv);
 
 	return 0;
 }
