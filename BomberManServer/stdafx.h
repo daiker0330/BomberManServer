@@ -15,15 +15,12 @@
 #include <stdlib.h>
 #include "IOCPModel.h"
 #include <iostream>
-#include <sql.h>
-#include <sqlext.h>
-#include <odbcss.h>
 
 #define MAXBUFLEN   255 
 #define MaxNameLen  20
 #define SERVPORT 4160
 #define BACKLOG 20
 
-#pragma comment(lib, "ODBC32.lib")
+
 
 // TODO:  在此处引用程序需要的其他头文件

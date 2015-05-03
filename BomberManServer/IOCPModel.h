@@ -4,11 +4,15 @@
 #include <winsock2.h>
 #include <MSWSock.h>
 #include <vector>
-//#include  <afxtempl.h>
+#include <iostream>
+#include <sql.h>
+#include <sqlext.h>
+#include <odbcss.h>
 
 using namespace std;
 
 #pragma comment(lib,"ws2_32.lib")
+#pragma comment(lib, "ODBC32.lib")
 
 // 缓冲区长度 (1024*8)
 #define MAX_BUFFER_LEN        8192  
@@ -185,6 +189,8 @@ public:
 	// 设置监听端口
 	void SetPort( const int& nPort ) { m_nPort=nPort; }
 
+	bool InitDB();
+
 protected:
 
 	// 初始化IOCP
@@ -232,6 +238,8 @@ protected:
 	// 判断客户端Socket是否已经断开
 	bool _IsSocketAlive(SOCKET s);
 
+	
+
 private:
 
 	HANDLE                       m_hShutdownEvent;              // 用来通知线程系统退出的事件，为了能够更好的退出线程
@@ -255,5 +263,10 @@ private:
 	LPFN_GETACCEPTEXSOCKADDRS    m_lpfnGetAcceptExSockAddrs; 
 
 	static string _msg;
+
+	SQLHENV  henv;//定义环境句柄
+	SQLHDBC  hdbc1;//定义数据库连接句柄     
+	
+	RETCODE retcode;
 };
 

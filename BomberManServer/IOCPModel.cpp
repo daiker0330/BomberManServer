@@ -41,6 +41,49 @@ CIOCPModel::~CIOCPModel(void)
 	this->Stop();
 }
 
+bool CIOCPModel::InitDB()
+{
+	henv = SQL_NULL_HENV;//定义环境句柄
+	hdbc1 = SQL_NULL_HDBC;//定义数据库连接句柄     
+	
+	
+	retcode = SQLAllocHandle(SQL_HANDLE_ENV, NULL, &henv);
+
+	if (retcode < 0)//错误处理
+	{
+		cout << "allocate ODBC Environment handle errors." << endl;
+		return false;
+	}
+	// Notify ODBC that this is an ODBC 3.0 application.
+	retcode = SQLSetEnvAttr(henv, SQL_ATTR_ODBC_VERSION,
+		(SQLPOINTER)SQL_OV_ODBC3, SQL_IS_INTEGER);
+	if (retcode < 0) //错误处理
+	{
+		cout << "the  ODBC is not version3.0 " << endl;
+		return false;
+	}
+
+	// Allocate an ODBC connection and connect.
+	retcode = SQLAllocHandle(SQL_HANDLE_DBC, henv, &hdbc1);
+	if (retcode < 0) //错误处理
+	{
+		cout << "allocate ODBC connection handle errors." << endl;
+		return false;
+	}
+	//Data Source Name must be of type User DNS or System DNS
+	wchar_t* szDSN = L"BombManServer";
+	wchar_t* szUID = L"daiker";//log name
+	wchar_t* szAuthStr = L"12345";//passward
+	//connect to the Data Source
+	retcode = SQLConnect(hdbc1, (SQLWCHAR*)szDSN, (SWORD)wcslen(szDSN), (SQLWCHAR*)szUID, (SWORD)wcslen(szUID), (SQLWCHAR*)szAuthStr, (SWORD)wcslen(szAuthStr));
+	if (retcode < 0) //错误处理
+	{
+		cout << "connect to  ODBC datasource errors." << endl;
+		return false;
+	}
+	
+}
+
 ///////////////////////////////////////////////////////////////////
 // 工作者线程：  为IOCP请求服务的工作者线程
 DWORD WINAPI CIOCPModel::_WorkerThread(LPVOID lpParam)
@@ -425,6 +468,11 @@ void CIOCPModel::_DeInitialize()
 	RELEASE(m_pListenContext);
 
 	printf("release finish.\n");
+
+	/* Clean up.*/
+	SQLDisconnect(hdbc1);
+	SQLFreeHandle(SQL_HANDLE_DBC, hdbc1);
+	SQLFreeHandle(SQL_HANDLE_ENV, henv);
 }
 
 
@@ -581,15 +629,44 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 			msg.type2 = MSG_NULL;
 			if (recv_msg->type2 == MSG_LOGIN_CKECK)
 			{
-				if (strcmp(recv_msg->str1, user.c_str()) == 0 && strcmp(recv_msg->str2, psd.c_str()) == 0)
-				{
-					msg.type2 = MSG_LOGIN_CONFIRM;
+				msg.type2 = MSG_LOGIN_DENY;
 
-				}
-				else
+				SQLHSTMT  hstmt1 = SQL_NULL_HSTMT;//定义语句句柄
+				// Allocate a statement handle.
+				retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc1, &hstmt1);
+				if (retcode < 0) //错误处理
 				{
-					msg.type2 = MSG_LOGIN_DENY;
+					cout << "allocate ODBC statement handle errors." << endl;
+					return false;
 				}
+
+				retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)L"SELECT user_name,user_psd  FROM account", SQL_NTS);
+				if (retcode < 0)
+				{
+					cout << "Executing statement  throught ODBC  errors." << endl;
+					return -1;
+				}
+
+				// SQLBindCol variables
+				SQLCHAR      user_name[MaxNameLen + 1];
+				SQLCHAR   user_password[MaxNameLen + 1];
+				SQLINTEGER   columnLen = 0;//数据库定义中该属性列的长度
+
+				while (1)
+				{
+					retcode = SQLFetch(hstmt1);
+					if (retcode == SQL_NO_DATA)
+						break;
+
+					retcode = SQLGetData(hstmt1, 1, SQL_C_CHAR, user_name, MaxNameLen, &columnLen);
+					retcode = SQLGetData(hstmt1, 2, SQL_C_CHAR, user_password, MaxNameLen, &columnLen);
+					if (strcmp(recv_msg->str1, (char *)user_name) == 0 && strcmp(recv_msg->str2, (char *)user_password) == 0)
+					{
+						msg.type2 = MSG_LOGIN_CONFIRM;
+					}
+				}
+
+				SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
 			}
 			break;
 		}
