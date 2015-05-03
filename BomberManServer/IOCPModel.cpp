@@ -640,7 +640,7 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 					return false;
 				}
 
-				retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)L"SELECT user_name,user_psd  FROM account", SQL_NTS);
+				retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)L"SELECT id,user_name,user_psd,money,VIP  FROM account", SQL_NTS);
 				if (retcode < 0)
 				{
 					cout << "Executing statement  throught ODBC  errors." << endl;
@@ -648,9 +648,12 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 				}
 
 				// SQLBindCol variables
-				SQLCHAR      user_name[MaxNameLen + 1];
-				SQLCHAR   user_password[MaxNameLen + 1];
-				SQLINTEGER   columnLen = 0;//数据库定义中该属性列的长度
+				SQLINTEGER		id;
+				SQLCHAR			user_name[MaxNameLen + 1];
+				SQLCHAR			user_password[MaxNameLen + 1];
+				SQLINTEGER		money;
+				SQLINTEGER		VIP;
+				SQLINTEGER		columnLen = 0;//数据库定义中该属性列的长度
 
 				while (1)
 				{
@@ -658,11 +661,24 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 					if (retcode == SQL_NO_DATA)
 						break;
 
-					retcode = SQLGetData(hstmt1, 1, SQL_C_CHAR, user_name, MaxNameLen, &columnLen);
-					retcode = SQLGetData(hstmt1, 2, SQL_C_CHAR, user_password, MaxNameLen, &columnLen);
+					retcode = SQLGetData(hstmt1, 1, SQL_C_LONG, &id, 0, &columnLen);
+					retcode = SQLGetData(hstmt1, 2, SQL_C_CHAR, user_name, MaxNameLen, &columnLen);
+					retcode = SQLGetData(hstmt1, 3, SQL_C_CHAR, user_password, MaxNameLen, &columnLen);
+					retcode = SQLGetData(hstmt1, 4, SQL_C_LONG, &money, 0, &columnLen);
+					retcode = SQLGetData(hstmt1, 5, SQL_C_LONG, &VIP, 0, &columnLen);
 					if (strcmp(recv_msg->str1, (char *)user_name) == 0 && strcmp(recv_msg->str2, (char *)user_password) == 0)
 					{
 						msg.type2 = MSG_LOGIN_CONFIRM;
+						msg.para1 = id;
+						msg.para2 = money;
+						if (VIP == 1)
+						{
+							strcpy_s(msg.str1, 20, "VIP");
+						}
+						else
+						{
+							strcpy_s(msg.str1, 20, "NOT");
+						}
 					}
 				}
 
