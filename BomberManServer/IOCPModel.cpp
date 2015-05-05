@@ -1,9 +1,6 @@
 #pragma once
 #include "StdAfx.h"
-#include "IOCPModel.h"
-#include "Message.h"
-#include <string.h> 
-#include <iostream>
+
 
 #define WORKER_THREADS_PER_PROCESSOR 2
 // 同时投递的Accept请求的数量
@@ -39,49 +36,6 @@ CIOCPModel::~CIOCPModel(void)
 {
 	// 确保资源彻底释放
 	this->Stop();
-}
-
-bool CIOCPModel::InitDB()
-{
-	henv = SQL_NULL_HENV;//定义环境句柄
-	hdbc1 = SQL_NULL_HDBC;//定义数据库连接句柄     
-	
-	
-	retcode = SQLAllocHandle(SQL_HANDLE_ENV, NULL, &henv);
-
-	if (retcode < 0)//错误处理
-	{
-		cout << "allocate ODBC Environment handle errors." << endl;
-		return false;
-	}
-	// Notify ODBC that this is an ODBC 3.0 application.
-	retcode = SQLSetEnvAttr(henv, SQL_ATTR_ODBC_VERSION,
-		(SQLPOINTER)SQL_OV_ODBC3, SQL_IS_INTEGER);
-	if (retcode < 0) //错误处理
-	{
-		cout << "the  ODBC is not version3.0 " << endl;
-		return false;
-	}
-
-	// Allocate an ODBC connection and connect.
-	retcode = SQLAllocHandle(SQL_HANDLE_DBC, henv, &hdbc1);
-	if (retcode < 0) //错误处理
-	{
-		cout << "allocate ODBC connection handle errors." << endl;
-		return false;
-	}
-	//Data Source Name must be of type User DNS or System DNS
-	wchar_t* szDSN = L"BombManServer";
-	wchar_t* szUID = L"daiker";//log name
-	wchar_t* szAuthStr = L"12345";//passward
-	//connect to the Data Source
-	retcode = SQLConnect(hdbc1, (SQLWCHAR*)szDSN, (SWORD)wcslen(szDSN), (SQLWCHAR*)szUID, (SWORD)wcslen(szUID), (SQLWCHAR*)szAuthStr, (SWORD)wcslen(szAuthStr));
-	if (retcode < 0) //错误处理
-	{
-		cout << "connect to  ODBC datasource errors." << endl;
-		return false;
-	}
-	
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -469,10 +423,7 @@ void CIOCPModel::_DeInitialize()
 
 	printf("release finish.\n");
 
-	/* Clean up.*/
-	SQLDisconnect(hdbc1);
-	SQLFreeHandle(SQL_HANDLE_DBC, hdbc1);
-	SQLFreeHandle(SQL_HANDLE_ENV, henv);
+	
 }
 
 
@@ -608,7 +559,7 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 	/////////////////////////////////////////////////////////////////
 	// 编写处理消息流程
 
-	printf("receive  %s:%d message:%s\n", inet_ntoa(ClientAddr->sin_addr), ntohs(ClientAddr->sin_port), pIoContext->m_wsaBuf.buf);
+	//printf("receive  %s:%d message:%s\n", inet_ntoa(ClientAddr->sin_addr), ntohs(ClientAddr->sin_port), pIoContext->m_wsaBuf.buf);
 	
 	CMessage msg,*recv_msg;
 	string user = "daiker", psd = "12345", msg_str;
@@ -625,70 +576,22 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 		}
 		case MSG_LOGIN:
 		{
-			msg.type1 = MSG_LOGIN;
-			msg.type2 = MSG_NULL;
-			if (recv_msg->type2 == MSG_LOGIN_CKECK)
-			{
-				msg.type2 = MSG_LOGIN_DENY;
-
-				SQLHSTMT  hstmt1 = SQL_NULL_HSTMT;//定义语句句柄
-				// Allocate a statement handle.
-				retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc1, &hstmt1);
-				if (retcode < 0) //错误处理
-				{
-					cout << "allocate ODBC statement handle errors." << endl;
-					return false;
-				}
-
-				retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)L"SELECT id,user_name,user_psd,money,VIP  FROM account", SQL_NTS);
-				if (retcode < 0)
-				{
-					cout << "Executing statement  throught ODBC  errors." << endl;
-					return -1;
-				}
-
-				// SQLBindCol variables
-				SQLINTEGER		id;
-				SQLCHAR			user_name[MaxNameLen + 1];
-				SQLCHAR			user_password[MaxNameLen + 1];
-				SQLINTEGER		money;
-				SQLINTEGER		VIP;
-				SQLINTEGER		columnLen = 0;//数据库定义中该属性列的长度
-
-				while (1)
-				{
-					retcode = SQLFetch(hstmt1);
-					if (retcode == SQL_NO_DATA)
-						break;
-
-					retcode = SQLGetData(hstmt1, 1, SQL_C_LONG, &id, 0, &columnLen);
-					retcode = SQLGetData(hstmt1, 2, SQL_C_CHAR, user_name, MaxNameLen, &columnLen);
-					retcode = SQLGetData(hstmt1, 3, SQL_C_CHAR, user_password, MaxNameLen, &columnLen);
-					retcode = SQLGetData(hstmt1, 4, SQL_C_LONG, &money, 0, &columnLen);
-					retcode = SQLGetData(hstmt1, 5, SQL_C_LONG, &VIP, 0, &columnLen);
-					if (strcmp(recv_msg->str1, (char *)user_name) == 0 && strcmp(recv_msg->str2, (char *)user_password) == 0)
-					{
-						msg.type2 = MSG_LOGIN_CONFIRM;
-						msg.para1 = id;
-						msg.para2 = money;
-						if (VIP == 1)
-						{
-							strcpy_s(msg.str1, 20, "VIP");
-						}
-						else
-						{
-							strcpy_s(msg.str1, 20, "NOT");
-						}
-					}
-				}
-
-				SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
-			}
+			msg = dataProcess->Login(recv_msg);
 			break;
 		}
 		case MSG_GAME:
 		{
-		
+
+			break;
+		}
+		case MSG_ROOM:
+		{
+			msg = dataProcess->Room(recv_msg);
+			break;
+		}
+		case MSG_LOBBY:
+		{
+			msg = dataProcess->Lobby(recv_msg);
 			break;
 		}
 	}
@@ -696,10 +599,10 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 	//回复消息
 	send(pSocketContext->m_Socket, (char*)&msg, sizeof(CMessage), 0);
 
-	printf("type1:%d\n", recv_msg->type1);
-	printf("type2:%d\n", recv_msg->type2);
-	printf("str1:%s\n", recv_msg->str1);
-	printf("str2:%s\n", recv_msg->str2);
+	//printf("type1:%d\n", recv_msg->type1);
+	//printf("type2:%d\n", recv_msg->type2);
+	//printf("str1:%s\n", recv_msg->str1);
+	//printf("str2:%s\n", recv_msg->str2);
 	//printf("msg:%s\n", recv_msg->msg);
 
 	// 然后开始投递下一个WSARecv请求

@@ -14,7 +14,18 @@
 #include <string.h>
 #include <stdlib.h>
 #include "IOCPModel.h"
+#include "Message.h"
 #include <iostream>
+#include "DataProcessh.h"
+#include <list>
+#include <utility>
+#include "OnlineData.h"
+#include <sql.h>
+#include <sqlext.h>
+#include <odbcss.h>
+#include <MSWSock.h>
+#include <vector>
+
 
 #define MAXBUFLEN   255 
 #define MaxNameLen  20

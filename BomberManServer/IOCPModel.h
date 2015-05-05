@@ -1,18 +1,14 @@
 #pragma once
-
-// winsock 2 的头文件和库
 #include <winsock2.h>
 #include <MSWSock.h>
 #include <vector>
 #include <iostream>
-#include <sql.h>
-#include <sqlext.h>
-#include <odbcss.h>
+#include "DataProcessh.h"
+
 
 using namespace std;
 
 #pragma comment(lib,"ws2_32.lib")
-#pragma comment(lib, "ODBC32.lib")
 
 // 缓冲区长度 (1024*8)
 #define MAX_BUFFER_LEN        8192  
@@ -189,7 +185,7 @@ public:
 	// 设置监听端口
 	void SetPort( const int& nPort ) { m_nPort=nPort; }
 
-	bool InitDB();
+	void SetDataProcess(Dataprocess* p){ dataProcess = p; }
 
 protected:
 
@@ -264,9 +260,6 @@ private:
 
 	static string _msg;
 
-	SQLHENV  henv;//定义环境句柄
-	SQLHDBC  hdbc1;//定义数据库连接句柄     
-	
-	RETCODE retcode;
+	Dataprocess* dataProcess;
 };
 
