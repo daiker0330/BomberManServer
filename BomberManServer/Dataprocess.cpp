@@ -238,3 +238,16 @@ CMessage Dataprocess::Lobby(CMessage* recv_msg)
 	}
 	return msg;
 }
+
+CMessage Dataprocess::Game( CMessage* recv_msg )
+{
+	CMessage ret;
+	ret.type1 = MSG_GAME;
+	ret.type2 = MSG_GAME_OPERATION;
+	
+	stringstream sio(ret.msg);
+	sio<<recv_msg->msg<<" 0 0 0";
+	string tmp = sio.str();
+	strcpy_s(ret.msg, tmp.c_str());
+	return ret;
+}
