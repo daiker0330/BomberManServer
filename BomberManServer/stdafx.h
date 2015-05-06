@@ -22,6 +22,8 @@
 #include <odbcss.h>
 #include <MSWSock.h>
 #include <vector>
+#include <atlconv.h>
+#include <windowsx.h>
 
 
 #define MAXBUFLEN   255 

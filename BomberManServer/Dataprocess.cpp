@@ -255,7 +255,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 			Sleep(1);
 		}
 		
-		game_host[now_roomnum].SetMessage(now_playernum, ret.msg);
+		game_host[now_roomnum].SetMessage(now_playernum, recv_msg->msg);
 		game_host[now_roomnum].SetReady(now_playernum, true);
 		game_host[now_roomnum].SetUsed(now_playernum, false);
 		while(!game_host[now_roomnum].AllReady())
@@ -276,8 +276,8 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		/*stringstream sio(ret.msg);
 		sio<<recv_msg->msg<<" 0 0 0";
 		string tmp = sio.str();
-		strcpy_s(ret.msg, tmp.c_str());
-		*/
+		strcpy_s(ret.msg, tmp.c_str());*/
+		
 	}
 	return ret;
 }
