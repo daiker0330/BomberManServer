@@ -1,5 +1,6 @@
 #pragma once
 #include "StdAfx.h"
+#include "DataProcessh.h"
 
 using namespace std;
 
@@ -242,12 +243,41 @@ CMessage Dataprocess::Lobby(CMessage* recv_msg)
 CMessage Dataprocess::Game( CMessage* recv_msg )
 {
 	CMessage ret;
-	ret.type1 = MSG_GAME;
-	ret.type2 = MSG_GAME_OPERATION;
-	
-	stringstream sio(ret.msg);
-	sio<<recv_msg->msg<<" 0 0 0";
-	string tmp = sio.str();
-	strcpy_s(ret.msg, tmp.c_str());
+	if(recv_msg->type2 == MSG_GAME_OPERATION)
+	{
+		ret.type1 = MSG_GAME;
+		ret.type2 = MSG_GAME_OPERATION;
+		int now_roomnum = recv_msg->para1;
+		int now_playernum = recv_msg->para2;
+
+		while(game_host[now_roomnum].Ready(now_playernum))
+		{
+			Sleep(1);
+		}
+		
+		game_host[now_roomnum].SetMessage(now_playernum, ret.msg);
+		game_host[now_roomnum].SetReady(now_playernum, true);
+		game_host[now_roomnum].SetUsed(now_playernum, false);
+		while(!game_host[now_roomnum].AllReady())
+		{
+			Sleep(1);
+		}
+
+		string all_msg = game_host[now_roomnum].GetAllMessage();
+		game_host[now_roomnum].SetUsed(now_playernum, true);
+		while(!game_host[now_roomnum].AllUsed())
+		{
+			Sleep(1);
+		}
+		game_host[now_roomnum].SetReady(now_playernum, false);
+
+		strcpy_s(ret.msg, all_msg.c_str());
+
+		/*stringstream sio(ret.msg);
+		sio<<recv_msg->msg<<" 0 0 0";
+		string tmp = sio.str();
+		strcpy_s(ret.msg, tmp.c_str());
+		*/
+	}
 	return ret;
 }

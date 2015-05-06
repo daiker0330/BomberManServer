@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataProcessh.h" />
+    <ClInclude Include="GameHost.h" />
     <ClInclude Include="IOCPModel.h" />
     <ClInclude Include="Message.h" />
     <ClInclude Include="resource.h" />
@@ -91,6 +92,7 @@
   <ItemGroup>
     <ClCompile Include="BomberManServer.cpp" />
     <ClCompile Include="Dataprocess.cpp" />
+    <ClCompile Include="GameHost.cpp" />
     <ClCompile Include="IOCPModel.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

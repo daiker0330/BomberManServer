@@ -1,5 +1,6 @@
 #pragma once
 #include "StdAfx.h"
+#include "IOCPModel.h"
 
 
 #define WORKER_THREADS_PER_PROCESSOR 2

@@ -5,6 +5,8 @@
 #include <sqlext.h>
 #include <odbcss.h>
 #include <sstream>
+#include "GameHost.h"
+#include "StdAfx.h"
 
 #pragma comment(lib, "ODBC32.lib")
 
@@ -28,5 +30,7 @@ private:
 	SQLHDBC  hdbc1;//定义数据库连接句柄     
 
 	RETCODE retcode;
+
+	CGameHost game_host[MAX_ROOMS+1];
 };
 
