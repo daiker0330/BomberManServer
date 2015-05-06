@@ -11,4 +11,5 @@ public:
 	list<pair<int, pair<string,string>>> user_name_psd;
 	list<pair<int, int>> user_money;
 	list<pair<int, bool>> user_vip;
+	bool ready[8][4];
 };

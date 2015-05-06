@@ -111,6 +111,7 @@ bool Dataprocess::InitDB()
 		{
 			onlineData.romm_user[i][j].first = 0;
 			onlineData.romm_user[i][j].second = "";
+			onlineData.ready[i][j] = false;
 		}
 	}
 
@@ -172,13 +173,13 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 				onlineData.romm_user[recv_msg->para1][i].first = recv_msg->para2;
 				onlineData.romm_user[recv_msg->para1][i].second = GetName(recv_msg->para2);
 				msg.type2 = MSG_ROOM_CONFIRM;
-				msg.para1 = i + 1;
+				msg.para1 = i;
 				break;
 			}
-			if (i == 4)
-			{
-				msg.type2 = MSG_ROOM_DENY;
-			}
+		}
+		if (i == 4)
+		{
+			msg.type2 = MSG_ROOM_DENY;
 		}
 	}
 	else if (recv_msg->type2 == MSG_ROOM_NAME)
@@ -192,6 +193,26 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 		else
 		{
 			msg.type2 = MSG_ROOM_EMPTY;
+		}
+	}
+	else if (recv_msg->type2 == MSG_ROOM_EXIT)
+	{
+		onlineData.romm_user[recv_msg->para1][recv_msg->para2].first = 0;
+	}
+	else if (recv_msg->type2 == MSG_ROOM_READY)
+	{
+		onlineData.ready[recv_msg->para1][recv_msg->para2] = true;
+		int i;
+		for (i = 0; i < 4; i++)
+		{
+			if (onlineData.ready[recv_msg->para1][i] == false)
+			{
+				break;
+			}
+		}
+		if (i == 4)
+		{
+			msg.type2 = MSG_ROOM_GAME;
 		}
 	}
 	return msg;
