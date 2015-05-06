@@ -13,18 +13,17 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include "IOCPModel.h"
 #include "Message.h"
 #include <iostream>
-#include "DataProcessh.h"
 #include <list>
 #include <utility>
-#include "OnlineData.h"
 #include <sql.h>
 #include <sqlext.h>
 #include <odbcss.h>
 #include <MSWSock.h>
 #include <vector>
+#include <atlconv.h>
+#include <windowsx.h>
 
 
 #define MAXBUFLEN   255 
@@ -32,6 +31,8 @@
 #define SERVPORT 4160
 #define BACKLOG 20
 
+const int MAX_PLAYER = 4;
+const int MAX_ROOMS = 8;
 
 
 // TODO:  在此处引用程序需要的其他头文件

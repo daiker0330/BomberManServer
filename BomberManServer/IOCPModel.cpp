@@ -1,5 +1,6 @@
 #pragma once
 #include "StdAfx.h"
+#include "IOCPModel.h"
 
 
 #define WORKER_THREADS_PER_PROCESSOR 2
@@ -581,7 +582,7 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 		}
 		case MSG_GAME:
 		{
-
+			msg = dataProcess->Game(recv_msg);
 			break;
 		}
 		case MSG_ROOM:

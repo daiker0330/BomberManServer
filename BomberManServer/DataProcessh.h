@@ -4,6 +4,9 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <odbcss.h>
+#include <sstream>
+#include "GameHost.h"
+#include "StdAfx.h"
 
 #pragma comment(lib, "ODBC32.lib")
 
@@ -15,6 +18,7 @@ public:
 	CMessage Login(CMessage* recv_msg);
 	CMessage Room(CMessage* recv_msg);
 	CMessage Lobby(CMessage* recv_msg);
+	CMessage Game(CMessage* recv_msg);
 	string GetName(int id);
 	bool InitDB();
 	void DeInit();
@@ -26,4 +30,7 @@ private:
 	SQLHDBC  hdbc1;//定义数据库连接句柄     
 
 	RETCODE retcode;
+
+	CGameHost game_host[MAX_ROOMS+1];
 };
+
