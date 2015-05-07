@@ -807,6 +807,13 @@ bool CIOCPModel::HandleError(PER_SOCKET_CONTEXT *pContext, const DWORD& dwErr)
 	else if (ERROR_NETNAME_DELETED == dwErr)
 	{
 		printf("client error finish!!\n");
+
+		string ip_add;
+		int ip_port;
+		ip_add = inet_ntoa(pContext->m_ClientAddr.sin_addr);
+		ip_port = pContext->m_ClientAddr.sin_port;
+		CIOCPModel::dataProcess->Disconnect(ip_add, ip_port);
+
 		this->_RemoveContext(pContext);
 		return true;
 	}
