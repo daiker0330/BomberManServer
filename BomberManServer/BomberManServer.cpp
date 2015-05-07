@@ -7,11 +7,15 @@
 
 using namespace std;
 
+CIOCPModel m_IOCP;
+Dataprocess m_Datapricess;
+
+Dataprocess* CIOCPModel::dataProcess = &m_Datapricess;
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	CIOCPModel m_IOCP;
-	Dataprocess m_Datapricess;
+	
 	char s;
 
 	if (false == m_Datapricess.InitDB())
@@ -20,7 +24,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		exit(0);
 	}
 
-	m_IOCP.SetDataProcess(&m_Datapricess);
+	//m_IOCP.SetDataProcess(&m_Datapricess);
+
+	
+
+	m_IOCP.SetIPAddress();
 
 	if (false == m_IOCP.LoadSocketLib())
 	{

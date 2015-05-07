@@ -39,6 +39,23 @@ CIOCPModel::~CIOCPModel(void)
 	this->Stop();
 }
 
+void CIOCPModel::SetIPAddress()
+{
+	printf("Please Enter the IP address( l = localhost ):\n");
+	string ip_add;
+	cin >> ip_add;
+	if (ip_add == "l")
+	{
+		m_strIP = "127.0.0.1";
+	}
+	else
+	{
+		m_strIP = ip_add;
+	}
+	
+	return;
+}
+
 ///////////////////////////////////////////////////////////////////
 // 工作者线程：  为IOCP请求服务的工作者线程
 DWORD WINAPI CIOCPModel::_WorkerThread(LPVOID lpParam)
@@ -91,7 +108,13 @@ DWORD WINAPI CIOCPModel::_WorkerThread(LPVOID lpParam)
 			if ((0 == dwBytesTransfered) && (RECV_POSTED == pIoContext->m_OpType || SEND_POSTED == pIoContext->m_OpType))
 			{
 				printf("client %s:%d disconnect.\n", inet_ntoa(pSocketContext->m_ClientAddr.sin_addr), ntohs(pSocketContext->m_ClientAddr.sin_port));
-
+				
+				string ip_add;
+				int ip_port;
+				ip_add = inet_ntoa(pSocketContext->m_ClientAddr.sin_addr);
+				ip_port = pSocketContext->m_ClientAddr.sin_port;
+				CIOCPModel::dataProcess->Disconnect(ip_add, ip_port);
+				
 				// 释放掉对应的资源
 				pIOCPModel->_RemoveContext(pSocketContext);
 
@@ -577,27 +600,27 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 		}
 		case MSG_LOGIN:
 		{
-			msg = dataProcess->Login(recv_msg);
+			msg = CIOCPModel::dataProcess->Login(recv_msg, ClientAddr);
 			break;
 		}
 		case MSG_GAME:
 		{
-			msg = dataProcess->Game(recv_msg);
+			msg = CIOCPModel::dataProcess->Game(recv_msg);
 			break;
 		}
 		case MSG_ROOM:
 		{
-			msg = dataProcess->Room(recv_msg);
+			msg = CIOCPModel::dataProcess->Room(recv_msg);
 			break;
 		}
 		case MSG_LOBBY:
 		{
-			msg = dataProcess->Lobby(recv_msg);
+			msg = CIOCPModel::dataProcess->Lobby(recv_msg);
 			break;
 		}
 		case MSG_CHAT:
 		{
-			msg = dataProcess->Chat(recv_msg);
+			msg = CIOCPModel::dataProcess->Chat(recv_msg);
 			break;
 		}
 	}
@@ -763,6 +786,13 @@ bool CIOCPModel::HandleError(PER_SOCKET_CONTEXT *pContext, const DWORD& dwErr)
 		if (!_IsSocketAlive(pContext->m_Socket))
 		{
 			printf("client error finish!\n");
+
+			string ip_add;
+			int ip_port;
+			ip_add = inet_ntoa(pContext->m_ClientAddr.sin_addr);
+			ip_port = pContext->m_ClientAddr.sin_port;
+			CIOCPModel::dataProcess->Disconnect(ip_add, ip_port);
+
 			this->_RemoveContext(pContext);
 			return true;
 		}

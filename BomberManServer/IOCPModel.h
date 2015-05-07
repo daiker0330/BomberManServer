@@ -43,6 +43,7 @@ typedef struct _PER_IO_CONTEXT
 	char           m_szBuffer[MAX_BUFFER_LEN];                 // 这个是WSABUF里具体存字符的缓冲区
 	OPERATION_TYPE m_OpType;                                   // 标识网络操作的类型(对应上面的枚举)
 
+
 	// 初始化
 	_PER_IO_CONTEXT()
 	{
@@ -112,6 +113,7 @@ typedef struct _PER_SOCKET_CONTEXT
 		_PER_IO_CONTEXT* p = new _PER_IO_CONTEXT;
 
 		m_arrayIoContext.push_back( p );
+		
 
 		return p;
 	}
@@ -185,7 +187,11 @@ public:
 	// 设置监听端口
 	void SetPort( const int& nPort ) { m_nPort=nPort; }
 
-	void SetDataProcess(Dataprocess* p){ dataProcess = p; }
+	//void static SetDataProcess(Dataprocess* p){ dataProcess = p; }
+
+	void SetIPAddress();
+
+	static Dataprocess* dataProcess;
 
 protected:
 
@@ -260,6 +266,6 @@ private:
 
 	static string _msg;
 
-	Dataprocess* dataProcess;
+	
 };
 

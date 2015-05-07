@@ -15,11 +15,12 @@ using namespace std;
 class Dataprocess
 {
 public:
-	CMessage Login(CMessage* recv_msg);
+	CMessage Login(CMessage* recv_msg, SOCKADDR_IN* socket);
 	CMessage Room(CMessage* recv_msg);
 	CMessage Lobby(CMessage* recv_msg);
 	CMessage Game(CMessage* recv_msg);
 	CMessage Chat(CMessage* recv_msg);
+	void Disconnect(string ip,int port);
 	string GetName(int id);
 	bool InitDB();
 	void DeInit();

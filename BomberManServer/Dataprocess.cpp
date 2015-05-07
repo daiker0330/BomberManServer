@@ -121,7 +121,7 @@ bool Dataprocess::InitDB()
 	return true;
 }
 
-CMessage Dataprocess::Login(CMessage* recv_msg)
+CMessage Dataprocess::Login(CMessage* recv_msg, SOCKADDR_IN* socket)
 {
 	CMessage msg;
 	msg.type1 = MSG_LOGIN;
@@ -155,6 +155,13 @@ CMessage Dataprocess::Login(CMessage* recv_msg)
 						strcpy_s(msg.str1, 20, "VIP");
 					}
 				}
+
+				pair<int, pair<string, int>> ip_port;
+				ip_port.first = p->first;
+				ip_port.second.first = inet_ntoa(socket->sin_addr);
+				ip_port.second.second = socket->sin_port;
+
+				onlineData.user_ip_port.push_back(ip_port);
 			}
 		}
 	}
@@ -337,4 +344,29 @@ CMessage Dataprocess::Chat(CMessage* recv_msg)
 		}
 	}
 	return msg;
+}
+
+void Dataprocess::Disconnect(string ip, int port)
+{
+	int id;
+	list<pair<int, pair<string, int>>>::iterator p;
+	for (p = onlineData.user_ip_port.begin(); p != onlineData.user_ip_port.end(); p++)
+	{
+		if (ip == p->second.first &&port == p->second.second)
+		{
+			id = p->first;
+			onlineData.user_ip_port.erase(p);
+			break;
+		}
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (onlineData.romm_user[i][j].first == id)
+			{
+				onlineData.romm_user[i][j].first = 0;
+			}
+		}
+	}
 }
