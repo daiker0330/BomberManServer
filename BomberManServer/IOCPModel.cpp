@@ -595,6 +595,11 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 			msg = dataProcess->Lobby(recv_msg);
 			break;
 		}
+		case MSG_CHAT:
+		{
+			msg = dataProcess->Chat(recv_msg);
+			break;
+		}
 	}
 	
 	//»Ø¸´ÏûÏ¢
