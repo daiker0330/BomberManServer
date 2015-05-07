@@ -213,6 +213,7 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 		}
 		if (i == 4)
 		{
+			game_host[recv_msg->para1].Init();
 			msg.type2 = MSG_ROOM_GAME;
 		}
 	}
@@ -264,12 +265,13 @@ CMessage Dataprocess::Lobby(CMessage* recv_msg)
 CMessage Dataprocess::Game( CMessage* recv_msg )
 {
 	CMessage ret;
+	int now_roomnum = recv_msg->para1;
+	int now_playernum = recv_msg->para2;
+
 	if(recv_msg->type2 == MSG_GAME_OPERATION)
 	{
 		ret.type1 = MSG_GAME;
 		ret.type2 = MSG_GAME_OPERATION;
-		int now_roomnum = recv_msg->para1;
-		int now_playernum = recv_msg->para2;
 
 		while(game_host[now_roomnum].Ready(now_playernum))
 		{
@@ -299,6 +301,10 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		string tmp = sio.str();
 		strcpy_s(ret.msg, tmp.c_str());*/
 		
+	}
+	else if(recv_msg->type2 == MSG_GAME_QUIT)
+	{
+		game_host[now_roomnum].SetAvailable(now_playernum, false);
 	}
 	return ret;
 }

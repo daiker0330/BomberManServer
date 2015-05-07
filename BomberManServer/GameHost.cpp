@@ -4,14 +4,22 @@ using namespace std;
 
 CGameHost::CGameHost(void)
 {
-	memset(ready, false, sizeof(ready));
-	memset(used, false, sizeof(used));
+	Init();
 }
 
 
 CGameHost::~CGameHost(void)
 {
 }
+
+void CGameHost::Init()
+{
+	memset(available, true, sizeof(available));
+	memset(ready, false, sizeof(ready));
+	memset(used, false, sizeof(used));
+}
+
+
 
 void CGameHost::SetMessage( int num, char m[] )
 {
@@ -25,7 +33,11 @@ bool CGameHost::AllReady()
 	int i;
 	bool ret = true;
 	for(i=1;i<=MAX_PLAYER;i++)
+	{
+		if(!available[i])
+			continue;
 		ret = ret & ready[i];
+	}
 	return ret;
 }
 
@@ -34,7 +46,11 @@ bool CGameHost::AllUsed()
 	int i;
 	bool ret = true;
 	for(i=1;i<=MAX_PLAYER;i++)
+	{
+		if(!available[i])
+			continue;
 		ret = ret & used[i];
+	}
 	return ret;
 }
 
@@ -44,7 +60,10 @@ string CGameHost::GetAllMessage()
 	int i;
 	for(i=1;i<=MAX_PLAYER;i++)
 	{
-		ret += msg[i] + " ";
+		if(!available[i])
+			ret += "0 ";
+		else
+			ret += msg[i] + " ";
 	}
 	return ret;
 }

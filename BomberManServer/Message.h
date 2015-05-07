@@ -16,6 +16,7 @@
 
 #define MSG_GAME				0x03
 #define MSG_GAME_OPERATION		0x01
+#define MSG_GAME_QUIT			0x02
 
 #define MSG_ROOM				0x04
 #define MSG_ROOM_TRY			0x01
