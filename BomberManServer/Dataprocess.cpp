@@ -116,6 +116,8 @@ bool Dataprocess::InitDB()
 		}
 	}
 
+	onlineData.chat_num = 0;
+
 	return true;
 }
 
@@ -301,4 +303,31 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		
 	}
 	return ret;
+}
+
+CMessage Dataprocess::Chat(CMessage* recv_msg)
+{
+	CMessage msg;
+	msg.type1 = MSG_CHAT;
+	msg.type2 = MSG_NULL;
+	if (recv_msg->type2 == MSG_CHAT_SEND)
+	{
+		onlineData.chat_message[onlineData.chat_num].first.append(recv_msg->str1);
+		onlineData.chat_message[onlineData.chat_num].second.append(recv_msg->str2);
+		onlineData.chat_num++;
+	}
+	else if (recv_msg->type2 == MSG_CHAT_GET)
+	{
+		if (onlineData.chat_num == recv_msg->para1 || onlineData.chat_num == 0)
+		{
+			msg.type2 = MSG_CHAT_DENY;
+		}
+		else if (recv_msg->para1 < onlineData.chat_num)
+		{
+			strcpy_s(msg.str1, 20, onlineData.chat_message[recv_msg->para1].first.c_str());
+			strcpy_s(msg.str2, 20, onlineData.chat_message[recv_msg->para1].second.c_str());
+			msg.type2 = MSG_CHAT_RETURN;
+		}
+	}
+	return msg;
 }

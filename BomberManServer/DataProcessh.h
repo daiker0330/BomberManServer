@@ -19,6 +19,7 @@ public:
 	CMessage Room(CMessage* recv_msg);
 	CMessage Lobby(CMessage* recv_msg);
 	CMessage Game(CMessage* recv_msg);
+	CMessage Chat(CMessage* recv_msg);
 	string GetName(int id);
 	bool InitDB();
 	void DeInit();

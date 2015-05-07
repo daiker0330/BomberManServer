@@ -33,6 +33,13 @@
 #define MSG_LOBBY_ROOM			0x01
 #define MSG_LOBBY_RETURN		0x02
 
+#define MSG_CHAT				0x06
+#define MSG_CHAT_SEND			0x01
+#define MSG_CHAT_GET			0x02
+#define MSG_CHAT_RETURN			0x03
+#define MSG_CHAT_END			0x04
+#define MSG_CHAT_DENY			0x05
+
 class CMessage
 {
 public:
