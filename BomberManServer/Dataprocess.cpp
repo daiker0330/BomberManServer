@@ -276,6 +276,12 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 	CMessage ret;
 	int now_roomnum = recv_msg->para1;
 	int now_playernum = recv_msg->para2;
+	if(recv_msg->msg[0]!='0')
+	{
+		cout<<"Received Game Message: "<<endl;
+		cout<<"type2 = "<<recv_msg->type2;
+		cout<<" room num = "<<now_roomnum<<" player_num = "<<now_playernum<<" msg= "<<recv_msg->msg<<endl;
+	}
 
 	if(recv_msg->type2 == MSG_GAME_OPERATION)
 	{
