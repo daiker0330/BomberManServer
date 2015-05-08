@@ -316,6 +316,13 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		game_host[now_roomnum].SetAvailable(now_playernum, false);
 		onlineData.ready[now_roomnum][now_playernum] = false;
 	}
+	else if(recv_msg->type2 == MSG_GAME_START)
+	{
+		unsigned int seed = seed_manager.AskSeed(now_roomnum);
+		ret.type1 = MSG_GAME;
+		ret.type2 = MSG_GAME_START;
+		ret.para1 = seed;
+	}
 	return ret;
 }
 

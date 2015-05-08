@@ -7,6 +7,7 @@
 #include <sstream>
 #include "GameHost.h"
 #include "StdAfx.h"
+#include "SeedManager.h"
 
 #pragma comment(lib, "ODBC32.lib")
 
@@ -34,5 +35,6 @@ private:
 	RETCODE retcode;
 
 	CGameHost game_host[MAX_ROOMS+1];
+	CSeedManager seed_manager;
 };
 
