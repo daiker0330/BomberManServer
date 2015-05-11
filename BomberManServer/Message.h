@@ -41,6 +41,14 @@
 #define MSG_CHAT_END			0x04
 #define MSG_CHAT_DENY			0x05
 
+#define MSG_DATA				0x07
+#define MSG_DATA_GET_MONEY		0x01
+#define MSG_DATA_SET_MONEY		0x02
+#define MSG_DATA_GET_EXP		0x03
+#define MSG_DATA_SET_EXP		0x04
+#define MSG_DATA_SUCCESS		0x05
+#define MSG_DATA_ERROR			0x06
+
 class CMessage
 {
 public:

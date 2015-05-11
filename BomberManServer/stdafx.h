@@ -25,7 +25,6 @@
 #include <atlconv.h>
 #include <windowsx.h>
 
-
 #define MAXBUFLEN   255 
 #define MaxNameLen  20
 #define SERVPORT 4160

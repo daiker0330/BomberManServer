@@ -623,6 +623,11 @@ bool CIOCPModel::_DoRecv(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* pIo
 			msg = CIOCPModel::dataProcess->Chat(recv_msg);
 			break;
 		}
+		case MSG_DATA:
+		{
+			msg = CIOCPModel::dataProcess->Data(recv_msg);
+			break;
+		}
 	}
 	
 	//»Ø¸´ÏûÏ¢
