@@ -23,6 +23,8 @@ public:
 	CMessage Chat(CMessage* recv_msg);
 	void Disconnect(string ip,int port);
 	string GetName(int id);
+	
+	bool Init();
 	bool InitDB();
 	void DeInit();
 
@@ -36,5 +38,8 @@ private:
 
 	CGameHost game_host[MAX_ROOMS+1];
 	CSeedManager seed_manager;
+	CRITICAL_SECTION cs;
 };
+
+
 

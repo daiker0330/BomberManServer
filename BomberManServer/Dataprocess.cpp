@@ -4,6 +4,12 @@
 
 using namespace std;
 
+bool Dataprocess::Init()
+{
+	InitializeCriticalSection(&cs);
+	return InitDB();
+}
+
 bool Dataprocess::InitDB()
 {
 	henv = SQL_NULL_HENV;//定义环境句柄
@@ -222,7 +228,11 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 		}
 		if (i == 4)
 		{
-			game_host[recv_msg->para1].Init();
+			game_host[recv_msg->para1].Init(recv_msg->para2);
+			while(!game_host[recv_msg->para1].AllInit())
+			{
+				Sleep(1);
+			}
 			msg.type2 = MSG_ROOM_GAME;
 		}
 	}
@@ -276,11 +286,15 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 	CMessage ret;
 	int now_roomnum = recv_msg->para1;
 	int now_playernum = recv_msg->para2;
-	if(recv_msg->msg[0]!='0')
+	if(true)
 	{
 		cout<<"Received Game Message: "<<endl;
 		cout<<"type2 = "<<recv_msg->type2;
-		cout<<" room num = "<<now_roomnum<<" player_num = "<<now_playernum<<" msg= "<<recv_msg->msg<<endl;
+		cout<<" player_num = "<<now_playernum<<" msg= "<<recv_msg->msg<<endl;
+		/*cout<<"pos : "; 
+		for(int i=1;i<=8;i++)
+			cout<<recv_msg->debug[i]<<" ";
+		cout<<endl;*/
 	}
 
 	if(recv_msg->type2 == MSG_GAME_OPERATION)
@@ -288,28 +302,42 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		ret.type1 = MSG_GAME;
 		ret.type2 = MSG_GAME_OPERATION;
 
-		while(game_host[now_roomnum].Ready(now_playernum))
+		while(game_host[now_roomnum].Ready(now_playernum) == true)
 		{
-			Sleep(1);
+			;
 		}
-		
+		cout<<"Entered from "<<now_playernum<<endl;
+
 		game_host[now_roomnum].SetMessage(now_playernum, recv_msg->msg);
 		game_host[now_roomnum].SetReady(now_playernum, true);
 		game_host[now_roomnum].SetUsed(now_playernum, false);
-		while(!game_host[now_roomnum].AllReady())
+
+		while(true)
 		{
-			Sleep(1);
+			bool tmp = game_host[now_roomnum].AllReady();
+			if(tmp == true)
+				break;
 		}
 
+		cout<<"AllReady from"<<now_playernum<<endl;
+		       
 		string all_msg = game_host[now_roomnum].GetAllMessage();
 		game_host[now_roomnum].SetUsed(now_playernum, true);
+		
 		while(!game_host[now_roomnum].AllUsed())
 		{
-			Sleep(1);
+			;
 		}
-		game_host[now_roomnum].SetReady(now_playernum, false);
+
+		cout<<"AllUsed from "<<now_playernum<<endl;
+
+		EnterCriticalSection(&cs);
+		game_host[now_roomnum].ClearReady();
+		LeaveCriticalSection(&cs);
 
 		strcpy_s(ret.msg, all_msg.c_str());
+
+		cout<<"Return msg "<<now_playernum<<": "<<ret.msg<<endl;
 
 		/*stringstream sio(ret.msg);
 		sio<<recv_msg->msg<<" 0 0 0";

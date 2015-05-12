@@ -25,6 +25,7 @@
 #include <atlconv.h>
 #include <windowsx.h>
 
+#define ASSERT(x) {if(!(x)) _asm{int 0x03}}
 
 #define MAXBUFLEN   255 
 #define MaxNameLen  20

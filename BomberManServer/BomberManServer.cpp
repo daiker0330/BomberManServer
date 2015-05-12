@@ -18,7 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	char s;
 
-	if (false == m_Datapricess.InitDB())
+	if (false == m_Datapricess.Init())
 	{
 		printf("load database error\n");
 		exit(0);
