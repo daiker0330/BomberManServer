@@ -21,6 +21,7 @@ public:
 	CMessage Lobby(CMessage* recv_msg);
 	CMessage Game(CMessage* recv_msg);
 	CMessage Chat(CMessage* recv_msg);
+	CMessage Data(CMessage* recv_msg);
 	void Disconnect(string ip,int port);
 	string GetName(int id);
 	
