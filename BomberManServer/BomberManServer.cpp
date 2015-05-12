@@ -14,8 +14,6 @@ Dataprocess* CIOCPModel::dataProcess = &m_Datapricess;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	
-	
 	char s;
 
 	if (false == m_Datapricess.InitDB())
@@ -23,10 +21,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("load database error\n");
 		exit(0);
 	}
-
-	//m_IOCP.SetDataProcess(&m_Datapricess);
-
-	
 
 	m_IOCP.SetIPAddress();
 
@@ -53,7 +47,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	m_IOCP.Stop();
 
-	
+	m_Datapricess.DeInit();
 
 	return 0;
 }

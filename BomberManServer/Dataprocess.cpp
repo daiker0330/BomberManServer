@@ -416,6 +416,71 @@ CMessage Dataprocess::Data(CMessage* recv_msg)
 			SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
 		}
 	}
+	else if (recv_msg->type2 == MSG_DATA_GET_EXP)
+	{
+		SQLHSTMT  hstmt1 = SQL_NULL_HSTMT;//定义语句句柄
+
+		// Allocate a statement handle.
+		retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc1, &hstmt1);
+		if (retcode < 0) //错误处理
+		{
+			msg.type2 = MSG_DATA_ERROR;
+		}
+
+		wchar_t sql_str[100];
+		swprintf_s(sql_str, L"SELECT [exp] FROM account WHERE (ID = %d)", recv_msg->para1);
+
+		retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)sql_str, SQL_NTS);
+		if (retcode < 0)
+		{
+			msg.type2 = MSG_DATA_ERROR;
+		}
+		else
+		{
+			msg.type2 = MSG_DATA_SUCCESS;
+
+			// SQLBindCol variables
+			SQLINTEGER		exp;
+			SQLINTEGER		columnLen = 0;//数据库定义中该属性列的长度
+
+			while (1)
+			{
+				retcode = SQLFetch(hstmt1);
+				if (retcode == SQL_NO_DATA)
+					break;
+
+				retcode = SQLGetData(hstmt1, 1, SQL_C_LONG, &exp, 0, &columnLen);
+
+				msg.para1 = exp;
+			}
+			SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
+		}
+	}
+	else if (recv_msg->type2 == MSG_DATA_SET_EXP)
+	{
+		SQLHSTMT  hstmt1 = SQL_NULL_HSTMT;//定义语句句柄
+
+		// Allocate a statement handle.
+		retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc1, &hstmt1);
+		if (retcode < 0) //错误处理
+		{
+			msg.type2 = MSG_DATA_ERROR;
+		}
+
+		wchar_t sql_str[100];
+		swprintf_s(sql_str, L"UPDATE account SET [exp] = %d WHERE [ID] = %d", recv_msg->para2, recv_msg->para1);
+
+		retcode = SQLExecDirect(hstmt1, (SQLWCHAR*)sql_str, SQL_NTS);
+		if (retcode < 0)
+		{
+			msg.type2 = MSG_DATA_ERROR;
+		}
+		else
+		{
+			msg.type2 = MSG_DATA_SUCCESS;
+			SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
+		}
+	}
 	return msg;
 }
 
