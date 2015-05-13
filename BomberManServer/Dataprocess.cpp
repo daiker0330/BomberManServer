@@ -236,6 +236,16 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 			msg.type2 = MSG_ROOM_GAME;
 		}
 	}
+	else if (recv_msg->type2 == MSG_ROOM_SET_ACTOR)
+	{
+		onlineData.room_actor[recv_msg->para1][recv_msg->para2] = (int)recv_msg->msg[0];
+	}
+	else if (recv_msg->type2 == MSG_ROOM_GET_ACTOR)
+	{
+		msg.type2 = MSG_ROOM_RETURN_ACTOR;
+		msg.para1 = recv_msg->para2;
+		msg.para2 = onlineData.room_actor[recv_msg->para1][recv_msg->para2];
+	}
 	return msg;
 }
 
