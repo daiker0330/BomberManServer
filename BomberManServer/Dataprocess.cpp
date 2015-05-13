@@ -286,16 +286,14 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 	CMessage ret;
 	int now_roomnum = recv_msg->para1;
 	int now_playernum = recv_msg->para2;
-	if(true)
+	/*if(true)
 	{
 		cout<<"Received Game Message: "<<endl;
 		cout<<"type2 = "<<recv_msg->type2;
 		cout<<" player_num = "<<now_playernum<<" msg= "<<recv_msg->msg<<endl;
-		/*cout<<"pos : "; 
-		for(int i=1;i<=8;i++)
-			cout<<recv_msg->debug[i]<<" ";
-		cout<<endl;*/
-	}
+		
+		cout<<endl;
+	}*/
 
 	if(recv_msg->type2 == MSG_GAME_OPERATION)
 	{
@@ -306,7 +304,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		{
 			;
 		}
-		cout<<"Entered from "<<now_playernum<<endl;
+		//cout<<"Entered from "<<now_playernum<<endl;
 
 		game_host[now_roomnum].SetMessage(now_playernum, recv_msg->msg);
 		game_host[now_roomnum].SetReady(now_playernum, true);
@@ -319,7 +317,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 				break;
 		}
 
-		cout<<"AllReady from"<<now_playernum<<endl;
+		//cout<<"AllReady from"<<now_playernum<<endl;
 		       
 		string all_msg = game_host[now_roomnum].GetAllMessage();
 		game_host[now_roomnum].SetUsed(now_playernum, true);
@@ -329,7 +327,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 			;
 		}
 
-		cout<<"AllUsed from "<<now_playernum<<endl;
+		//cout<<"AllUsed from "<<now_playernum<<endl;
 
 		EnterCriticalSection(&cs);
 		game_host[now_roomnum].ClearReady();
@@ -337,7 +335,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 
 		strcpy_s(ret.msg, all_msg.c_str());
 
-		cout<<"Return msg "<<now_playernum<<": "<<ret.msg<<endl;
+		//cout<<"Return msg "<<now_playernum<<": "<<ret.msg<<endl;
 
 		/*stringstream sio(ret.msg);
 		sio<<recv_msg->msg<<" 0 0 0";
