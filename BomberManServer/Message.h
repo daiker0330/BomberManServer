@@ -60,7 +60,6 @@ public:
 	int para1;
 	int para2;
 	char msg[100];
-	float debug[9];
 
 	CMessage()
 	{
