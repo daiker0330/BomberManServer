@@ -30,6 +30,9 @@
 #define MSG_ROOM_READY			0x08
 #define MSG_ROOM_GAME			0x09
 #define MSG_ROOM_WAIT			0x10
+#define MSG_ROOM_SET_ACTOR		0x11
+#define MSG_ROOM_GET_ACTOR		0x12
+#define MSG_ROOM_RETURN_ACTOR	0x13
 
 #define MSG_LOBBY				0x05
 #define MSG_LOBBY_ROOM			0x01

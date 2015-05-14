@@ -15,4 +15,5 @@ public:
 	bool ready[8][4];
 	pair<string, string> chat_message[100];
 	int chat_num;
+	int room_actor[8][4];
 };
