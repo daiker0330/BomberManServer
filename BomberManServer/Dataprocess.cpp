@@ -228,10 +228,10 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 		}
 		if (i == 4)
 		{
-			game_host[recv_msg->para1].Init(recv_msg->para2);
+			game_host[recv_msg->para1].Init(recv_msg->para2+1);
 			while(!game_host[recv_msg->para1].AllInit())
 			{
-				Sleep(1);
+				;
 			}
 			msg.type2 = MSG_ROOM_GAME;
 		}
