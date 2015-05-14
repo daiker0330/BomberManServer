@@ -356,7 +356,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 	else if(recv_msg->type2 == MSG_GAME_QUIT)
 	{
 		game_host[now_roomnum].SetAvailable(now_playernum, false);
-		onlineData.ready[now_roomnum][now_playernum] = false;
+		onlineData.ready[now_roomnum][now_playernum-1] = false;
 	}
 	else if(recv_msg->type2 == MSG_GAME_START)
 	{
