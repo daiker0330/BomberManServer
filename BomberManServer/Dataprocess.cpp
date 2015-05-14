@@ -301,8 +301,6 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		cout<<"Received Game Message: "<<endl;
 		cout<<"type2 = "<<recv_msg->type2;
 		cout<<" player_num = "<<now_playernum<<" msg= "<<recv_msg->msg<<endl;
-		
-		cout<<endl;
 	}*/
 
 	if(recv_msg->type2 == MSG_GAME_OPERATION)
@@ -310,38 +308,25 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		ret.type1 = MSG_GAME;
 		ret.type2 = MSG_GAME_OPERATION;
 
-		while(game_host[now_roomnum].Ready(now_playernum) == true)
-		{
-			;
-		}
 		//cout<<"Entered from "<<now_playernum<<endl;
 
 		game_host[now_roomnum].SetMessage(now_playernum, recv_msg->msg);
-		game_host[now_roomnum].SetReady(now_playernum, true);
-		game_host[now_roomnum].SetUsed(now_playernum, false);
+		game_host[now_roomnum].ReleaseReady();
 
-		while(true)
-		{
-			bool tmp = game_host[now_roomnum].AllReady();
-			if(tmp == true)
-				break;
-		}
+		//cout<<"Released Ready from "<<now_playernum<<endl;
+
+		game_host[now_roomnum].WaitAllReady();
 
 		//cout<<"AllReady from"<<now_playernum<<endl;
 		       
 		string all_msg = game_host[now_roomnum].GetAllMessage();
-		game_host[now_roomnum].SetUsed(now_playernum, true);
-		
-		while(!game_host[now_roomnum].AllUsed())
-		{
-			;
-		}
+		game_host[now_roomnum].ReleaseRead();
+
+		//cout<<"Released Read from "<<now_playernum<<endl;
+
+		game_host[now_roomnum].WaitAllRead();
 
 		//cout<<"AllUsed from "<<now_playernum<<endl;
-
-		EnterCriticalSection(&cs);
-		game_host[now_roomnum].ClearReady();
-		LeaveCriticalSection(&cs);
 
 		strcpy_s(ret.msg, all_msg.c_str());
 
@@ -355,7 +340,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 	}
 	else if(recv_msg->type2 == MSG_GAME_QUIT)
 	{
-		game_host[now_roomnum].SetAvailable(now_playernum, false);
+		//game_host[now_roomnum].SetAvailable(now_playernum, false);
 		onlineData.ready[now_roomnum][now_playernum-1] = false;
 	}
 	else if(recv_msg->type2 == MSG_GAME_START)
