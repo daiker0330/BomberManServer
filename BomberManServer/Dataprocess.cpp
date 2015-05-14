@@ -228,7 +228,10 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 		}
 		if (i == 4)
 		{
+			EnterCriticalSection(&cs);
 			game_host[recv_msg->para1].Init(recv_msg->para2+1);
+			LeaveCriticalSection(&cs);
+
 			while(!game_host[recv_msg->para1].AllInit())
 			{
 				;
@@ -340,7 +343,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 	}
 	else if(recv_msg->type2 == MSG_GAME_QUIT)
 	{
-		//game_host[now_roomnum].SetAvailable(now_playernum, false);
+		game_host[now_roomnum].Leave(now_playernum);
 		onlineData.ready[now_roomnum][now_playernum-1] = false;
 	}
 	else if(recv_msg->type2 == MSG_GAME_START)

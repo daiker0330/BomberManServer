@@ -7,11 +7,6 @@ using namespace std;
 CGameHost::CGameHost(void)
 {
 	init_times=0;
-	ready = CreateSemaphore(NULL, 0, 4, NULL);
-	read = CreateSemaphore(NULL, 0, 4, NULL);
-	all_ready = CreateSemaphore(NULL, 0, 4, NULL);
-	all_read = CreateSemaphore(NULL, 0, 4, NULL);
-	monitor_thread = (HANDLE)_beginthreadex(NULL, 0, Monitor, (LPVOID)this, NULL, 0);
 	
 	/*for(int i=1; i<=MAX_PLAYER; i++)
 	{
@@ -33,10 +28,20 @@ CGameHost::~CGameHost(void)
 
 void CGameHost::Init(int num)
 {
-	/*available[num] = true;
-	ready[num] = false;
-	used[num] = false;*/
 	init_times = (init_times)%4+1;
+	if(init_times!=1) // only the first one will actually do init
+		return;
+
+	available_cnt = MAX_PLAYER;
+	for(int i=1; i<=MAX_PLAYER; i++)
+		available[i] = true;
+
+	ready = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
+	read = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
+	all_ready = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
+	all_read = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
+	monitor_thread = (HANDLE)_beginthreadex(NULL, 0, Monitor, (LPVOID)this, NULL, 0);
+	return;
 }
 
 
@@ -54,9 +59,9 @@ string CGameHost::GetAllMessage()
 	int i;
 	for(i=1;i<=MAX_PLAYER;i++)
 	{
-		/*if(!available[i])
-			ret += "0 0 ";
-		else*/
+		if(!available[i])
+			ret += "0 16 ";//default time:16 avoid wrapping forever
+		else
 			ret += msg[i] + " ";
 	}
 
@@ -75,34 +80,42 @@ unsigned __stdcall CGameHost::Monitor( LPVOID p )
 	while(true)
 	{
 		int i;
-		for(i=1;i<=MAX_PLAYER;i++)
+		for(i=1;i<=nowp->available_cnt;i++)
 		{
-			cout<<"Waiting "<<nowp->ready<<endl;
+			//cout<<"Waiting "<<nowp->ready<<endl;
 			WaitForSingleObject(nowp->ready, INFINITE);
-			cout<<"Get Ready!"<<endl;
+			//cout<<"Get Ready!"<<endl;
 		}
 
-		for(i=1;i<=MAX_PLAYER;i++)
+		//consume extra ready
+		while(WaitForSingleObject(nowp->ready, 0) != WAIT_TIMEOUT);
+
+		for(i=1;i<=nowp->available_cnt;i++)
 		{
 			ReleaseSemaphore(nowp->all_ready, 1, NULL);
 		}
 
-		for(i=1; i<=MAX_PLAYER; i++)
+		for(i=1; i<=nowp->available_cnt; i++)
 		{
 			WaitForSingleObject(nowp->read, INFINITE);
 		}
 
-		for(i=1; i<=MAX_PLAYER;i++)
+		while(WaitForSingleObject(nowp->read, 0) != WAIT_TIMEOUT);
+
+		for(i=1; i<=nowp->available_cnt;i++)
 		{
 			ReleaseSemaphore(nowp->all_read, 1, NULL);
 		}
+
+		if(nowp->available_cnt == 0)
+			break;
 	}
 	return 0;
 }
 
 void CGameHost::ReleaseReady()
 {
-	cout<<"Releasing "<<ready<<endl;
+	//cout<<"Releasing "<<ready<<endl;
 	ReleaseSemaphore(ready, 1, NULL);
 }
 
@@ -119,4 +132,12 @@ void CGameHost::ReleaseRead()
 void CGameHost::WaitAllRead()
 {
 	WaitForSingleObject(all_read, INFINITE);
+}
+
+void CGameHost::Leave( int num )
+{
+	available[num] = false;
+	available_cnt--;
+	ReleaseReady();
+	ReleaseRead();
 }
