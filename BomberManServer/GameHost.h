@@ -9,7 +9,8 @@ class CGameHost
 	volatile bool available[MAX_PLAYER+1];
 
 	volatile int init_times;
-	int available_cnt;
+	volatile int available_cnt;
+	int post_available_cnt;
 
 	HANDLE monitor_thread;
 	HANDLE ready, all_ready, read, all_read;

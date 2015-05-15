@@ -80,33 +80,29 @@ unsigned __stdcall CGameHost::Monitor( LPVOID p )
 	while(true)
 	{
 		int i;
-		for(i=1;i<=nowp->available_cnt;i++)
+		for(i=1;i<=nowp->post_available_cnt;i++)
 		{
 			//cout<<"Waiting "<<nowp->ready<<endl;
 			WaitForSingleObject(nowp->ready, INFINITE);
 			//cout<<"Get Ready!"<<endl;
 		}
 
-		//consume extra ready
-		while(WaitForSingleObject(nowp->ready, 0) != WAIT_TIMEOUT);
-
 		for(i=1;i<=nowp->available_cnt;i++)
 		{
 			ReleaseSemaphore(nowp->all_ready, 1, NULL);
 		}
 
-		for(i=1; i<=nowp->available_cnt; i++)
+		for(i=1; i<=nowp->post_available_cnt; i++)
 		{
 			WaitForSingleObject(nowp->read, INFINITE);
 		}
-
-		while(WaitForSingleObject(nowp->read, 0) != WAIT_TIMEOUT);
 
 		for(i=1; i<=nowp->available_cnt;i++)
 		{
 			ReleaseSemaphore(nowp->all_read, 1, NULL);
 		}
 
+		nowp->post_available_cnt = nowp->available_cnt;
 		if(nowp->available_cnt == 0)
 			break;
 	}
