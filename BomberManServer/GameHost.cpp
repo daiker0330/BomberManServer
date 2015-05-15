@@ -33,6 +33,7 @@ void CGameHost::Init(int num)
 		return;
 
 	available_cnt = MAX_PLAYER;
+	post_available_cnt = available_cnt;
 	for(int i=1; i<=MAX_PLAYER; i++)
 		available[i] = true;
 
