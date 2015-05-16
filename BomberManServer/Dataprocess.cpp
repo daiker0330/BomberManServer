@@ -249,6 +249,10 @@ CMessage Dataprocess::Room(CMessage* recv_msg)
 		msg.para1 = recv_msg->para2;
 		msg.para2 = onlineData.room_actor[recv_msg->para1][recv_msg->para2];
 	}
+	else if (recv_msg->type2 == MSG_ROOM_NOT_READY)
+	{
+		onlineData.ready[recv_msg->para1][recv_msg->para2] = false;
+	}
 	return msg;
 }
 
@@ -516,6 +520,30 @@ CMessage Dataprocess::Data(CMessage* recv_msg)
 		{
 			msg.type2 = MSG_DATA_SUCCESS;
 			SQLFreeHandle(SQL_HANDLE_STMT, hstmt1);
+		}
+	}
+	else if (recv_msg->type2 == MSG_DATA_GET_READY)
+	{
+		msg.type2 = MSG_DATA_SUCCESS;
+		if (onlineData.ready[recv_msg->para1][recv_msg->para2])
+		{
+			msg.para1 = 1;
+		}
+		else
+		{
+			msg.para1 = 0;
+		}
+	}
+	else if (recv_msg->type2 == MSG_DATA_GET_VIP)
+	{
+		msg.type2 = MSG_DATA_SUCCESS;
+		list<pair<int, bool>>::iterator p3;
+		for (p3 = onlineData.user_vip.begin(); p3 != onlineData.user_vip.end(); p3++)
+		{
+			if (p3->first == recv_msg->para1)
+			{
+				msg.para1=p3->second;
+			}
 		}
 	}
 	return msg;

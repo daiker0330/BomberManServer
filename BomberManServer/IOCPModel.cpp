@@ -505,6 +505,8 @@ bool CIOCPModel::_DoAccpet(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* p
 	this->m_lpfnGetAcceptExSockAddrs(pIoContext->m_wsaBuf.buf, pIoContext->m_wsaBuf.len - ((sizeof(SOCKADDR_IN)+16) * 2),
 		sizeof(SOCKADDR_IN)+16, sizeof(SOCKADDR_IN)+16, (LPSOCKADDR*)&LocalAddr, &localLen, (LPSOCKADDR*)&ClientAddr, &remoteLen);
 	
+	printf("accept  %s:%d\n", inet_ntoa(ClientAddr->sin_addr), ntohs(ClientAddr->sin_port));
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 将ListenSocket上的Context复制出来一份为新连入的Socket新建一个SocketContext
 
@@ -545,6 +547,9 @@ bool CIOCPModel::_DoAccpet(PER_SOCKET_CONTEXT* pSocketContext, PER_IO_CONTEXT* p
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// 把Listen Socket的那个IoContext重置，准备投递新的AcceptEx
 	pIoContext->ResetBuffer();
+
+	
+
 	return this->_PostAccept(pIoContext);
 }
 
