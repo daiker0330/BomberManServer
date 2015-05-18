@@ -33,7 +33,6 @@ void CGameHost::Init(int num)
 		return;
 
 	available_cnt = MAX_PLAYER;
-	post_available_cnt = available_cnt;
 	for(int i=1; i<=MAX_PLAYER; i++)
 		available[i] = true;
 
@@ -41,6 +40,8 @@ void CGameHost::Init(int num)
 	read = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
 	all_ready = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
 	all_read = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
+	come = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
+	all_come = CreateSemaphore(NULL, 0, MAX_PLAYER, NULL);
 	monitor_thread = (HANDLE)_beginthreadex(NULL, 0, Monitor, (LPVOID)this, NULL, 0);
 	return;
 }
@@ -81,7 +82,23 @@ unsigned __stdcall CGameHost::Monitor( LPVOID p )
 	while(true)
 	{
 		int i;
-		for(i=1;i<=nowp->post_available_cnt;i++)
+		for(i=1; i<=nowp->available_cnt; i++)
+		{
+			WaitForSingleObject(nowp->come, INFINITE);
+		}
+		for(i=1; i<=nowp->available_cnt; i++)
+		{
+			ReleaseSemaphore(nowp->all_come, 1, NULL);
+		}
+
+		nowp->available_cnt=0;
+		for(i=1; i<=MAX_PLAYER; i++)
+		{
+			if(nowp->available[i])
+				nowp->available_cnt++;
+		}
+
+		for(i=1;i<=nowp->available_cnt;i++)
 		{
 			//cout<<"Waiting "<<nowp->ready<<endl;
 			WaitForSingleObject(nowp->ready, INFINITE);
@@ -93,7 +110,7 @@ unsigned __stdcall CGameHost::Monitor( LPVOID p )
 			ReleaseSemaphore(nowp->all_ready, 1, NULL);
 		}
 
-		for(i=1; i<=nowp->post_available_cnt; i++)
+		for(i=1; i<=nowp->available_cnt; i++)
 		{
 			WaitForSingleObject(nowp->read, INFINITE);
 		}
@@ -103,7 +120,6 @@ unsigned __stdcall CGameHost::Monitor( LPVOID p )
 			ReleaseSemaphore(nowp->all_read, 1, NULL);
 		}
 
-		nowp->post_available_cnt = nowp->available_cnt;
 		if(nowp->available_cnt == 0)
 			break;
 	}
@@ -134,7 +150,14 @@ void CGameHost::WaitAllRead()
 void CGameHost::Leave( int num )
 {
 	available[num] = false;
-	available_cnt--;
-	ReleaseReady();
-	ReleaseRead();
+}
+
+void CGameHost::ReleaseCome()
+{
+	ReleaseSemaphore(come, 1, NULL);
+}
+
+void CGameHost::WaitAllCome()
+{
+	WaitForSingleObject(all_come, INFINITE);
 }
