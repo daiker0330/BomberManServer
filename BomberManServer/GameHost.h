@@ -10,10 +10,9 @@ class CGameHost
 
 	volatile int init_times;
 	volatile int available_cnt;
-	int post_available_cnt;
 
 	HANDLE monitor_thread;
-	HANDLE ready, all_ready, read, all_read;
+	HANDLE come, all_come, ready, all_ready, read, all_read;
 	
 
 public:
@@ -31,5 +30,7 @@ public:
 	void WaitAllReady();
 	void ReleaseRead();
 	void WaitAllRead();
+	void ReleaseCome();
+	void WaitAllCome();
 };
 

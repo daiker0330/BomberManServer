@@ -309,6 +309,23 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		cout<<"type2 = "<<recv_msg->type2;
 		cout<<" player_num = "<<now_playernum<<" msg= "<<recv_msg->msg<<endl;
 	}*/
+	if(recv_msg->type2 == MSG_GAME_START)
+	{
+		unsigned int seed = seed_manager.AskSeed(now_roomnum);
+		ret.type1 = MSG_GAME;
+		ret.type2 = MSG_GAME_START;
+		ret.para1 = seed;
+		return ret;
+	}
+
+	if(recv_msg->type2 == MSG_GAME_QUIT)
+	{
+		game_host[now_roomnum].Leave(now_playernum);
+		onlineData.ready[now_roomnum][now_playernum-1] = false;
+	}
+
+	game_host[now_roomnum].ReleaseCome();
+	game_host[now_roomnum].WaitAllCome();
 
 	if(recv_msg->type2 == MSG_GAME_OPERATION)
 	{
@@ -345,18 +362,7 @@ CMessage Dataprocess::Game( CMessage* recv_msg )
 		strcpy_s(ret.msg, tmp.c_str());*/
 		
 	}
-	else if(recv_msg->type2 == MSG_GAME_QUIT)
-	{
-		game_host[now_roomnum].Leave(now_playernum);
-		onlineData.ready[now_roomnum][now_playernum-1] = false;
-	}
-	else if(recv_msg->type2 == MSG_GAME_START)
-	{
-		unsigned int seed = seed_manager.AskSeed(now_roomnum);
-		ret.type1 = MSG_GAME;
-		ret.type2 = MSG_GAME_START;
-		ret.para1 = seed;
-	}
+	
 	return ret;
 }
 
