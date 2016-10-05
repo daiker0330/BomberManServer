@@ -10,22 +10,21 @@ using namespace std;
 
 #pragma comment(lib,"ws2_32.lib")
 
-// 缓冲区长度 (1024*8)
+// Buffer length = 1024*8
 #define MAX_BUFFER_LEN        8192  
-// 默认端口
+// Default port = 12345
 #define DEFAULT_PORT          12345    
-// 默认IP地址
+// Default IP address
 #define DEFAULT_IP            "127.0.0.1"
 
 
-//////////////////////////////////////////////////////////////////
-// 在完成端口上投递的I/O操作的类型
+// The type of IO operation on the IOCP
 typedef enum _OPERATION_TYPE  
 {  
-	ACCEPT_POSTED,                     // 标志投递的Accept操作
-	SEND_POSTED,                       // 标志投递的是发送操作
-	RECV_POSTED,                       // 标志投递的是接收操作
-	NULL_POSTED                        // 用于初始化，无意义
+	ACCEPT_POSTED,                     // Accept Operation
+	SEND_POSTED,                       // Send Operation
+	RECV_POSTED,                       // Receive Operation
+	NULL_POSTED                        // Default Operation
 
 }OPERATION_TYPE;
 

@@ -1,3 +1,5 @@
+// Define the message type and structure
+
 #pragma once
 
 #define MSG_NULL				0x00

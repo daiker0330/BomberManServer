@@ -1,3 +1,5 @@
+// The server data in the memory
+
 #pragma once
 #include <list>
 #include <utility>

@@ -32,8 +32,8 @@ public:
 private:
 	OnlineData onlineData;
 
-	SQLHENV  henv;//定义环境句柄
-	SQLHDBC  hdbc1;//定义数据库连接句柄     
+	SQLHENV  henv;		// Define the environment handle
+	SQLHDBC  hdbc1;		// Define the database connection handle  
 
 	RETCODE retcode;
 

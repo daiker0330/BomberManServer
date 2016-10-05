@@ -1,4 +1,4 @@
-// BomberManServer.cpp : 定义控制台应用程序的入口点。
+// BomberManServer.cpp : The main entrance of server
 //
 #pragma once
 #include "stdafx.h"
